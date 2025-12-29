@@ -36,10 +36,10 @@ class Gaussian_Linear(nn.Module):
         self.b_mu = nn.Parameter(torch.zeros(1, outputs))
         self.b_rho = nn.Parameter(torch.full((1, outputs), -3))
 
-        self.w_mu_prior = torch.zeros(inputs, outputs)
-        self.w_sigma_prior = torch.ones(inputs, outputs)
-        self.b_mu_prior = torch.zeros(1, outputs)
-        self.b_sigma_prior = torch.ones(1, outputs)
+        self.register_buffer("w_mu_prior" ,torch.zeros(inputs, outputs))
+        self.register_buffer("w_sigma_prior", torch.ones(inputs, outputs))
+        self.register_buffer("b_mu_prior", torch.zeros(1, outputs))
+        self.register_buffer("b_sigma_prior", torch.ones(1, outputs))
 
     def forward(self, x):
 
@@ -56,10 +56,25 @@ class Gaussian_Linear(nn.Module):
         w_sigma = F.softplus(self.w_rho)
         b_sigma = F.softplus(self.b_rho)
 
-        kl_w = 0.5 * (torch.log(self.w_sigma_prior ** 2/ w_sigma ** 2) + (w_sigma ** 2 + (self.w_mu - self.w_mu_prior) ** 2) / w_sigma ** 2 - 1).sum()
-        kl_b = 0.5 * (torch.log(self.b_sigma_prior ** 2/ b_sigma ** 2) + (b_sigma ** 2 + (self.b_mu - self.b_mu_prior) ** 2) / b_sigma ** 2 - 1).sum()
+        kl_w = 0.5 * (torch.log(self.w_sigma_prior ** 2/ w_sigma ** 2) + (w_sigma ** 2 + (self.w_mu - self.w_mu_prior) ** 2) / self.w_sigma_prior ** 2 - 1).sum()
+        kl_b = 0.5 * (torch.log(self.b_sigma_prior ** 2/ b_sigma ** 2) + (b_sigma ** 2 + (self.b_mu - self.b_mu_prior) ** 2) / self.b_sigma_prior ** 2 - 1).sum()
 
         return kl_b + kl_w
+    
+class BNN(nn.Module):
+    def __init__(self, hidden = 10) -> None:
+        super().__init__()
+
+        self.fc1 = Gaussian_Linear(1, hidden)
+        self.fc2 = Gaussian_Linear(hidden, 1)
+
+    def forward(self, x):
+
+        x = self.fc1(x)
+        x = F.relu(x)
+        x = self.fc2(x)
+
+        return x
 
 
 #%% Plotting
