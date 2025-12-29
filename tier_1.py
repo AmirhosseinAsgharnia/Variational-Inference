@@ -5,6 +5,7 @@
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import os
 import matplotlib.pyplot as plt
 
@@ -24,28 +25,44 @@ eps = sigma * torch.randn_like(x)
 y_ideal = torch.sin(x)
 y_meas  = y_ideal + eps
 
-#%% Class
+#%% Classes
 
 class Gaussian_Linear(nn.Module):
     def __init__(self, inputs, outputs):
         super().__init__()
 
-        self.register_buffer("w_mu", torch.zeros(inputs, outputs))
-        self.register_buffer("w_std", torch.ones(inputs, outputs))
-        self.register_buffer("b_mu", torch.zeros(1, outputs))
-        self.register_buffer("b_std", torch.ones(1, outputs))
+        self.w_mu = nn.Parameter(torch.zeros(inputs, outputs))
+        self.w_rho = nn.Parameter(torch.full((inputs, outputs), -3))
+        self.b_mu = nn.Parameter(torch.zeros(1, outputs))
+        self.b_rho = nn.Parameter(torch.full((1, outputs), -3))
+
+        self.w_mu_prior = torch.zeros(inputs, outputs)
+        self.w_sigma_prior = torch.ones(inputs, outputs)
+        self.b_mu_prior = torch.zeros(1, outputs)
+        self.b_sigma_prior = torch.ones(1, outputs)
 
     def forward(self, x):
-        eps_w = torch.randn_like(self.w_mu) #type: ignore
-        eps_b = torch.randn_like(self.b_mu) #type: ignore
 
-        w = self.w_mu + eps_w * self.w_std #type: ignore
-        b = self.b_mu + eps_b * self.b_std #type: ignore
+        w_sigma = F.softplus(self.w_rho)
+        b_sigma = F.softplus(self.b_rho)
+
+        w = self.w_mu + w_sigma * torch.randn_like(self.w_mu)
+        b = self.b_mu + b_sigma * torch.randn_like(self.b_mu)
 
         return x @ w + b
+    
+    def kl_divergence(self):
+
+        w_sigma = F.softplus(self.w_rho)
+        b_sigma = F.softplus(self.b_rho)
+
+        kl_w = 0.5 * (torch.log(self.w_sigma_prior ** 2/ w_sigma ** 2) + (w_sigma ** 2 + (self.w_mu - self.w_mu_prior) ** 2) / w_sigma ** 2 - 1).sum()
+        kl_b = 0.5 * (torch.log(self.b_sigma_prior ** 2/ b_sigma ** 2) + (b_sigma ** 2 + (self.b_mu - self.b_mu_prior) ** 2) / b_sigma ** 2 - 1).sum()
+
+        return kl_b + kl_w
 
 
-#%%
+#%% Plotting
 
 fig, axe = plt.subplots(1, 2, figsize=(10, 4))
 axe[0].plot(x, y_ideal, color = 'r')
