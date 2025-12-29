@@ -12,10 +12,21 @@ I asked ChatGPT for three problems to solve. These problems range from easy to d
 
 # Tier 1:
 
+The problem:
+
+<div align="center">
+
 $y=sin(x) + \varepsilon(x)$,
 
 where $x\in[-pi, pi]$,
 
-$\varepsilon(x)\approx\mathcal{N}(0,\sigma(x)^2)$,
+$\varepsilon(x)\sim\mathcal{N}(0,\sigma(x)^2)$,
 
 $\sigma(x)=0.1 + 0.4.\mathbf{1}_{|x|>\frac{\pi}{2}}$
+
+</div>
+
+The results:
+<div align="center">
+<img width="700" height="500" alt="Figure_1" src="https://github.com/user-attachments/assets/13d1201a-15d5-444e-b7ce-b7d3a4890298" />
+</div>
