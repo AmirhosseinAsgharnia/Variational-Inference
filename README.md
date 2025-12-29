@@ -30,3 +30,17 @@ The results:
 <div align="center">
 <img width="700" height="500" alt="Figure_1" src="https://github.com/user-attachments/assets/13d1201a-15d5-444e-b7ce-b7d3a4890298" />
 </div>
+
+# Tier 2:
+
+The problem:
+
+<div align="center">
+
+$y=x^3 - 0.5 x^2 + \varepsilon$,
+
+where $x\in[-1, 1]$,
+
+$\varepsilon(x)\sim\mathcal{N}(0,0.1^2)$,
+
+</div>
