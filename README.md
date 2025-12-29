@@ -22,7 +22,7 @@ where $x\in[-pi, pi]$,
 
 $\varepsilon(x)\sim\mathcal{N}(0,\sigma(x)^2)$,
 
-$\sigma(x)=0.1 + 0.4.\mathbf{1}_{|x|>\frac{\pi}{2}}$
+$\sigma(x)=0.1 + 0.4.\mathbf{1}_{|x|>\frac{\pi}{2}}$.
 
 </div>
 
@@ -41,6 +41,11 @@ $y=x^3 - 0.5 x^2 + \varepsilon$,
 
 where $x\in[-1, 1]$,
 
-$\varepsilon(x)\sim\mathcal{N}(0,0.1^2)$,
+$\varepsilon(x)\sim\mathcal{N}(0,0.1^2)$.
 
+</div>
+
+The results:
+<div align="center">
+<img width="700" height="500" alt="Figure_2" src="https://github.com/user-attachments/assets/8c234d7e-0712-4ef8-87e3-fd5c4128101e" />
 </div>
