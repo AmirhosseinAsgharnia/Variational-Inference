@@ -8,7 +8,7 @@ Bayesian machine learning still relies on observed data, just as conventional me
 
 The examples in this repository focus on making these ideas concrete. Each problem is kept intentionally small so the behavior of variational inference, uncertainty, and Bayesian learning can be clearly seen rather than hidden behind large models or heavy abstractions.
 
-I asked ChatGPT for three problems to solve. These problems range from easy to difficult.
+I asked ChatGPT for three problems to solve. These problems range from easy to difficult. I did not use ChatGPT to solve these problems for me, but to critique my own solutions.
 
 # Tier 1:
 
