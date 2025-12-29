@@ -6,8 +6,11 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.optim as optim
 import os
 import matplotlib.pyplot as plt
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
 os.system("cls")
 
@@ -32,9 +35,9 @@ class Gaussian_Linear(nn.Module):
         super().__init__()
 
         self.w_mu = nn.Parameter(torch.zeros(inputs, outputs))
-        self.w_rho = nn.Parameter(torch.full((inputs, outputs), -3))
+        self.w_rho = nn.Parameter(torch.full((inputs, outputs), -3.0))
         self.b_mu = nn.Parameter(torch.zeros(1, outputs))
-        self.b_rho = nn.Parameter(torch.full((1, outputs), -3))
+        self.b_rho = nn.Parameter(torch.full((1, outputs), -3.0))
 
         self.register_buffer("w_mu_prior" ,torch.zeros(inputs, outputs))
         self.register_buffer("w_sigma_prior", torch.ones(inputs, outputs))
@@ -71,17 +74,46 @@ class BNN(nn.Module):
     def forward(self, x):
 
         x = self.fc1(x)
-        x = F.relu(x)
+        x = F.tanh(x)
         x = self.fc2(x)
 
         return x
 
 
+model = BNN(hidden=20).to(device)
+x, y_meas, sigma = x.to(device), y_meas.to(device), sigma.to(device)
+
+def gaussian_nll(y, yhat, sigma):
+    return ((y - yhat)**2 / (2*sigma**2) + torch.log(sigma)).sum()
+
+optimizer = optim.Adam(model.parameters(), lr=1e-3)
+
+max_epoch = 5000
+
+for epoch in range(max_epoch):
+    model.train()
+    y_pred = model(x)
+
+    kl = model.fc1.kl_divergence() + model.fc2.kl_divergence()
+    nll = gaussian_nll(y_meas, y_pred, sigma)
+
+    loss = (nll + kl) / N
+
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
+
+    if (epoch % 10) == 0:
+        print(f"Epoch = {epoch}, Loss = {loss}, KL = {kl}")
+        
+model.eval()
+y_pred = model(x)
 #%% Plotting
 
 fig, axe = plt.subplots(1, 2, figsize=(10, 4))
 axe[0].plot(x, y_ideal, color = 'r')
 axe[0].scatter(x, y_meas, color = 'b')
+axe[0].plot(x, y_pred.detach(), color = 'g')
 axe[0].set_xlabel("x")
 axe[0].set_ylabel("y")
 axe[0].minorticks_on()
