@@ -105,18 +105,39 @@ for epoch in range(max_epoch):
 
     if (epoch % 10) == 0:
         print(f"Epoch = {epoch}, Loss = {loss}, KL = {kl}")
-        
+
 model.eval()
-y_pred = model(x)
+y_pred_1 = model(x)
+
+#%% Evaluation
+
+@torch.no_grad()
+def mc_predict(model, x, S=200):
+    model.eval()  # doesn't stop sampling in your code, but keeps other layers consistent
+    preds = []
+    for _ in range(S):
+        preds.append(model(x))          # (N,1)
+    preds = torch.stack(preds, dim=0)   # (S,N,1)
+    mean = preds.mean(dim=0)            # (N,1)
+    std  = preds.std(dim=0)             # (N,1)  epistemic
+    q05  = preds.quantile(0.05, dim=0)  # (N,1)
+    q95  = preds.quantile(0.95, dim=0)  # (N,1)
+    return mean, std, q05, q95
+
+mean, std, q05, q95 = mc_predict(model, x, S=300)
+
 #%% Plotting
 
-fig, axe = plt.subplots(1, 2, figsize=(10, 4))
-axe[0].plot(x, y_ideal, color = 'r')
-axe[0].scatter(x, y_meas, color = 'b')
-axe[0].plot(x, y_pred.detach(), color = 'g')
-axe[0].set_xlabel("x")
-axe[0].set_ylabel("y")
-axe[0].minorticks_on()
-axe[0].grid(True, which="major", linestyle="-", linewidth=0.8)
-axe[0].grid(True, which="minor", linestyle=":", linewidth=0.5)
+x_cpu = x.squeeze().detach().cpu().numpy()
+mean_cpu = mean.squeeze().cpu().numpy()
+q05_cpu  = q05.squeeze().cpu().numpy()
+q95_cpu  = q95.squeeze().cpu().numpy()
+
+plt.figure(figsize=(7,5))
+plt.plot(x_cpu, y_ideal.squeeze().cpu().numpy(), 'r', label='true')
+plt.scatter(x_cpu, y_meas.squeeze().cpu().numpy(), s=10, label='data')
+plt.plot(x_cpu, mean_cpu, 'g', label='MC mean')
+plt.fill_between(x_cpu, q05_cpu, q95_cpu, alpha=0.2, label='90% epistemic band')
+plt.legend()
+plt.grid(True)
 plt.show()
