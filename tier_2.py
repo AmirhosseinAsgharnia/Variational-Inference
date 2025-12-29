@@ -103,7 +103,7 @@ for epoch in range(max_epoch):
 model.eval()
 y_pred_1 = model(x)
 
-#%% Evaluation
+#%% Evaluation (Chat wrote this part, not me)
 
 @torch.no_grad()
 def mc_predict(model, x, S=200):
