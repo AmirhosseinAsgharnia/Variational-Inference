@@ -7,3 +7,15 @@ In standard (deterministic) neural networks, training ends with a single set of 
 Bayesian machine learning still relies on observed data, just as conventional methods do. The key difference is that it also incorporates prior knowledge about the parameters before seeing the data. Since this prior knowledge may be incomplete or wrong, uncertainty is a natural and essential part of the model. Where data is limited or ambiguous, a BNN becomes less confident, and where data is abundant, that uncertainty shrinks.
 
 The examples in this repository focus on making these ideas concrete. Each problem is kept intentionally small so the behavior of variational inference, uncertainty, and Bayesian learning can be clearly seen rather than hidden behind large models or heavy abstractions.
+
+I asked ChatGPT for three problems to solve. These problems range from easy to difficult.
+
+# Tier 1:
+
+$y=sin(x) + \varepsilon(x)$,
+
+where $x\in[-pi, pi]$,
+
+$\varepsilon(x)\approx\mathcal{N}(0,\sigma(x)^2)$,
+
+$\sigma(x)=0.1 + 0.4.\mathbf{1}_{|x|>\frac{\pi}{2}}$
